@@ -1,5 +1,5 @@
-#ifndef MODE_TALLYHUB_32_H
-#define MODE_TALLYHUB_32_H
+#ifndef MODE_TALLYHUB_H
+#define MODE_TALLYHUB_H
 
 #include <Arduino.h>
 

@@ -1,5 +1,5 @@
-#ifndef MODE_UDPWS_32_H
-#define MODE_UDPWS_32_H
+#ifndef MODE_UDPWS_H
+#define MODE_UDPWS_H
 
 #include <Arduino.h>
 

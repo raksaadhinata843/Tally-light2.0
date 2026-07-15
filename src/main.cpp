@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <MODE_UDPWS_32.h>
-#include <MODE_TALLYHUB_32.h>
+#include <MODE_UDPWS.h>
+#include <MODE_TALLYHUB.h>
 
 #define PIN_SWITCH 4 
 

@@ -1,4 +1,4 @@
-#include <MODE_UDPWS_32.h>
+#include <MODE_UDPWS.h>
 #include <config.h>
 #ifdef ESP32
   #include <WiFi.h>

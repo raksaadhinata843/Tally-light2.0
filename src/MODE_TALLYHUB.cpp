@@ -1,4 +1,4 @@
-#include <MODE_TALLYHUB_32.h>
+#include <MODE_TALLYHUB.h>
 #ifdef ESP32
   #include <WiFi.h>
   #include <WebServer.h>
