@@ -32,7 +32,7 @@ static void recon_sw()
     leds_sw.show();
     delay(500);
   }
-  udp_sw.beginMulticast(IPAddress(239, 1, 2, 3), 4210);
+  udp_sw.beginMulticast(IPAddress(239, 1, 2, 3), static_cast<uint16_t>(4210));
 }
 
 void setup_mode_udp()
@@ -73,7 +73,7 @@ void setup_mode_udp()
   leds_sw.setPixelColor(0, leds_sw.Color(0, 0, 255));
   leds_sw.show();
 
-  udp_sw.beginMulticast(IPAddress(239, 1, 2, 3), 4210);
+  udp_sw.beginMulticast(IPAddress(239, 1, 2, 3), static_cast<uint16_t>(4210));
 }
 
 void loop_mode_udp()
