@@ -149,7 +149,7 @@ void setup_mode_th()
     ipAddress = WiFi.localIP().toString();
     Serial.println("IP Address: " + ipAddress);
     setupWebServer();
-    ArduinoOTA.setHostname(deviceID.c_str());
+    ArduinoOTA.setHostname(CAM_ID);
     ArduinoOTA.begin();
     if (udp_th.begin(3000))
     {
