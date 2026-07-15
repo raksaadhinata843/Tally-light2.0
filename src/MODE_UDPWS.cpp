@@ -32,7 +32,11 @@ static void recon_sw()
     leds_sw.show();
     delay(500);
   }
+#ifdef ESP8266
+  udp_sw.begin(4210);
+#else
   udp_sw.beginMulticast(IPAddress(239, 1, 2, 3), static_cast<uint16_t>(4210));
+#endif
 }
 
 void setup_mode_udp()
@@ -73,7 +77,11 @@ void setup_mode_udp()
   leds_sw.setPixelColor(0, leds_sw.Color(0, 0, 255));
   leds_sw.show();
 
+#ifdef ESP8266
+  udp_sw.begin(4210);
+#else
   udp_sw.beginMulticast(IPAddress(239, 1, 2, 3), static_cast<uint16_t>(4210));
+#endif
 }
 
 void loop_mode_udp()
