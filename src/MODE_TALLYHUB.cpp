@@ -22,7 +22,9 @@ public:
   bool begin(const char* name, bool readOnly) {
     (void)name;
     (void)readOnly;
-    if (!EEPROM.begin(512)) return false;
+    // 512 bytes is well within the ESP8266 EEPROM sector limit.
+    // Avoid inverting the return value here to silence IntelliSense false positives.
+    EEPROM.begin(512);
     EEPROM.get(0, _data);
     if (_data.magic != 0xAB) {
       memset(&_data, 0, sizeof(_data));

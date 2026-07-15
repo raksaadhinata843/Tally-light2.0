@@ -16,8 +16,8 @@ A firmware project for broadcast tally lights — hardware indicators that show 
 | Path | Purpose |
 |------|---------|
 | `src/main.cpp` | Entry point — reads a hardware switch on GPIO 4 to select operating mode, then delegates to one of the two mode modules |
-| `src/MODE_TALLYHUB_32.cpp/.h` | TallyHub mode (network protocol for tally hubs) |
-| `src/MODE_UDPWS_32.cpp/.h` | UDP/WebSocket mode |
+| `src/MODE_TALLYHUB.cpp/.h` | TallyHub mode (network protocol for tally hubs) |
+| `src/MODE_UDPWS.cpp/.h` | UDP/WebSocket mode |
 | `src/config.h` | WiFi SSID and password for UDP mode (edit before flashing) |
 | `platformio.ini` | PlatformIO build environments and library dependencies |
 
