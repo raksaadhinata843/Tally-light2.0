@@ -1,4 +1,5 @@
-#include <MODE_TALLYHUB_32.h>
+#include <MODE_UDPWS_32.h>
+#include <config.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
@@ -70,13 +71,13 @@ void setup_mode_udp()
   udp_sw.beginMulticast(IPAddress(239, 1, 2, 3), 4210);
 }
 
-void loop()
+void loop_mode_udp()
 {
   ArduinoOTA.handle();
 
   if (WiFi.status() != WL_CONNECTED)
   {
-    recon();
+    recon_sw();
     return;
   }
 
