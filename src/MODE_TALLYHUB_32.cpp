@@ -1,17 +1,102 @@
 #include <MODE_TALLYHUB_32.h>
 #ifdef ESP32
   #include <WiFi.h>
+  #include <WebServer.h>
+  #include <DNSServer.h>
+  #include <Preferences.h>
 #elif defined(ESP8266)
   #include <ESP8266WiFi.h>
+  #include <ESP8266WebServer.h>
+  #include <DNSServer.h>
+  #include <EEPROM.h>
 #endif
 #include <WiFiUdp.h>
-#include <WebServer.h>
-#include <DNSServer.h>
 #include <ArduinoJson.h>
-#include <Preferences.h>
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
 #include <Adafruit_NeoPixel.h>
+
+#ifdef ESP8266
+class Preferences {
+public:
+  bool begin(const char* name, bool readOnly) {
+    (void)name;
+    (void)readOnly;
+    if (!EEPROM.begin(512)) return false;
+    EEPROM.get(0, _data);
+    if (_data.magic != 0xAB) {
+      memset(&_data, 0, sizeof(_data));
+      _data.magic = 0xAB;
+      EEPROM.put(0, _data);
+      EEPROM.commit();
+    }
+    return true;
+  }
+  void end() {
+    EEPROM.end();
+  }
+  void clear() {
+    memset(&_data, 0, sizeof(_data));
+    _data.magic = 0xAB;
+    EEPROM.put(0, _data);
+    EEPROM.commit();
+  }
+  String getString(const char* key, String defaultValue = "") {
+    const char* value = _getString(key);
+    return value ? String(value) : defaultValue;
+  }
+  void putString(const char* key, String value) {
+    _putString(key, value.c_str());
+    EEPROM.put(0, _data);
+    EEPROM.commit();
+  }
+  int getInt(const char* key, int defaultValue = 0) {
+    if (strcmp(key, "hubPort") == 0) {
+      return _data.hubPort != 0 ? _data.hubPort : defaultValue;
+    }
+    return defaultValue;
+  }
+  void putInt(const char* key, int value) {
+    if (strcmp(key, "hubPort") == 0) {
+      _data.hubPort = value;
+    }
+    EEPROM.put(0, _data);
+    EEPROM.commit();
+  }
+private:
+  struct ConfigData {
+    uint8_t magic;
+    char deviceName[32];
+    char hubIP[16];
+    int32_t hubPort;
+    char assignedSource[32];
+    char assignedSourceName[32];
+    char customDisplayName[32];
+  } _data;
+
+  const char* _getString(const char* key) {
+    if (strcmp(key, "deviceName") == 0) return _data.deviceName[0] ? _data.deviceName : nullptr;
+    if (strcmp(key, "hubIP") == 0) return _data.hubIP[0] ? _data.hubIP : nullptr;
+    if (strcmp(key, "assignedSource") == 0) return _data.assignedSource[0] ? _data.assignedSource : nullptr;
+    if (strcmp(key, "assignedSourceName") == 0) return _data.assignedSourceName[0] ? _data.assignedSourceName : nullptr;
+    if (strcmp(key, "customDisplayName") == 0) return _data.customDisplayName[0] ? _data.customDisplayName : nullptr;
+    return nullptr;
+  }
+  void _putString(const char* key, const char* value) {
+    char* dest = nullptr;
+    size_t len = 0;
+    if (strcmp(key, "deviceName") == 0) { dest = _data.deviceName; len = sizeof(_data.deviceName); }
+    else if (strcmp(key, "hubIP") == 0) { dest = _data.hubIP; len = sizeof(_data.hubIP); }
+    else if (strcmp(key, "assignedSource") == 0) { dest = _data.assignedSource; len = sizeof(_data.assignedSource); }
+    else if (strcmp(key, "assignedSourceName") == 0) { dest = _data.assignedSourceName; len = sizeof(_data.assignedSourceName); }
+    else if (strcmp(key, "customDisplayName") == 0) { dest = _data.customDisplayName; len = sizeof(_data.customDisplayName); }
+    if (dest) {
+      strncpy(dest, value, len - 1);
+      dest[len - 1] = '\0';
+    }
+  }
+};
+#endif
 
 #define FIRMWARE_VERSION "1.0.1"
 #define DEVICE_MODEL "ESP32-WS2812B"
@@ -30,7 +115,11 @@ static Adafruit_NeoPixel leds_th(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 #define TH_BLUE leds_th.Color(0, 0, 255)
 #define TH_YELLOW leds_th.Color(255, 200, 0)
 
-WebServer server(80);
+#ifdef ESP32
+  WebServer server(80);
+#elif defined(ESP8266)
+  ESP8266WebServer server(80);
+#endif
 WiFiUDP udp_th;
 Preferences preferences;
 WiFiManager wifiManager;
@@ -139,7 +228,15 @@ void setup_mode_th()
   setLedColor(TH_BLACK);
   pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
 
-  macAddress = WiFi.macAddress();
+  #ifdef ESP32
+    macAddress = WiFi.macAddress();
+  #else
+    uint8_t mac[6];
+    WiFi.macAddress(mac);
+    char macStr[18];
+    snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    macAddress = String(macStr);
+  #endif
   deviceID = "tally-" + macAddress;
   deviceID.replace(":", "");
   deviceID.toLowerCase();
@@ -153,7 +250,8 @@ void setup_mode_th()
     ipAddress = WiFi.localIP().toString();
     Serial.println("IP Address: " + ipAddress);
     setupWebServer();
-    ArduinoOTA.setHostname(CAM_ID);
+    String otaHostname = "tally-" + deviceID.substring(6, 12);
+    ArduinoOTA.setHostname(otaHostname.c_str());
     ArduinoOTA.begin();
     if (udp_th.begin(3000))
     {
@@ -411,8 +509,10 @@ void setupWiFi()
   WiFi.mode(WIFI_STA);
   WiFi.setAutoConnect(true);
   WiFi.setAutoReconnect(true);
-  WiFi.setSleep(WIFI_PS_NONE);
-  WiFi.setTxPower(WIFI_POWER_19_5dBm);
+  #ifdef ESP32
+    WiFi.setSleep(WIFI_PS_NONE);
+    WiFi.setTxPower(WIFI_POWER_19_5dBm);
+  #endif
 
   wifiManager.setAPCallback([](WiFiManager *myWiFiManager)
                             {

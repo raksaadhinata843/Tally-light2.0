@@ -53,7 +53,8 @@ void setup_mode_udp()
     delay(500);
   }
 
-  ArduinoOTA.setHostname(CAM_ID);
+  String otaHostname = "tally-cam" + String(CAM_ID);
+  ArduinoOTA.setHostname(otaHostname.c_str());
   ArduinoOTA.begin();
 
   // Flash putih sebanyak CAM_ID+1 kali agar ESP bisa dikenali
