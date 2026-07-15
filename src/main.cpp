@@ -12,9 +12,9 @@ void setup() {
     statusModeTerakhir = digitalRead(PIN_SWITCH);
 
     if (statusModeTerakhir == HIGH) {
-        setup_mode_th;
+        setup_mode_th();
     } else {
-        setup_mode_udp;
+        setup_mode_udp();
     }
 }
 
@@ -28,8 +28,8 @@ void loop() {
     }
 
     if (statusModeTerakhir == HIGH) {
-        loop_mode_th;
+        loop_mode_th();
     } else {
-        loop_mode_udp;
+        loop_mode_udp();
     }
 }
