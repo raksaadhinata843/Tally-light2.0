@@ -101,12 +101,12 @@ private:
 #endif
 
 #define FIRMWARE_VERSION "1.0.1"
-#define DEVICE_MODEL "ESP32-WS2812B"
+#define DEVICE_MODEL "ESP8266-WS2812B"
 
 // ---- LED hardware config (edit to match your wiring) ----
 #define LED_PIN 5
 #define LED_COUNT 1
-#define LED_BRIGHTNESS 80
+#define LED_BRIGHTNESS 100
 #define BOOT_BUTTON_PIN 0
 
 static Adafruit_NeoPixel leds_th(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -240,7 +240,7 @@ void setup_mode_th()
     macAddress = String(macStr);
   #endif
   deviceID = "tally-" + macAddress;
-  deviceID.replace(":", "");
+  deviceID.replace("-", "");
   deviceID.toLowerCase();
   Serial.println("Device ID: " + deviceID);
 

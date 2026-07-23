@@ -42,7 +42,7 @@ static void recon_sw()
 void setup_mode_udp()
 {
   leds_sw.begin();
-  leds_sw.setBrightness(50);
+  leds_sw.setBrightness(100);
   leds_sw.setPixelColor(0, leds_sw.Color(0, 0, 0));
   leds_sw.show();
 

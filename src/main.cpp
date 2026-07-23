@@ -4,18 +4,15 @@
 
 #define PIN_SWITCH 4 
 
-bool statusModeTerakhir = false;
+bool statusModeTerakhir;
+bool mode_udp = true;
 
 void setup() {
     pinMode(PIN_SWITCH, INPUT_PULLUP);
 
     statusModeTerakhir = digitalRead(PIN_SWITCH);
 
-    if (statusModeTerakhir == HIGH) {
-        setup_mode_th();
-    } else {
-        setup_mode_udp();
-    }
+    setup_mode_udp();
 }
 
 void loop() {
@@ -24,10 +21,22 @@ void loop() {
 
     if (statusSekarang != statusModeTerakhir) {
         delay(500);
-        ESP.restart();
-    }
+        
+        if (digitalRead(PIN_SWITCH) == statusSekarang) {
 
-    if (statusModeTerakhir == HIGH) {
+            if (mode_udp) {
+                mode_udp = false;
+                setup_mode_th();
+            } else {
+                mode_udp = true;
+                setup_mode_udp();
+            }
+        }
+    }
+    
+    statusModeTerakhir = statusSekarang;
+
+    if (!mode_udp) {
         loop_mode_th();
     } else {
         loop_mode_udp();
